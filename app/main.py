@@ -1,22 +1,24 @@
-import store
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-
-app = FastAPI()
-
-@app.get('/')
-def get_list():
-    return [1,2,3,]
-
-@app.get('/contact', response_class=HTMLResponse)
-def get_list():
-    return """
-        <h1>Hola soy una pagina</h1>
-        <p>soy un parrafo</p>
-    """
+import utils
+import read_csv
+import charts
 
 def run():
-    store.get_categories()
+    data = read_csv.read_csv("./data.csv")
+    data = list(filter(lambda item : item["Continent"] == "South America", data))
+
+    countries = list(map(lambda x: x["Country"], data))
+    percentages = list(map(lambda x: x["World Population Percentage"], data))
+    charts.generate_pie_chart(countries, percentages)
+
+
+    country = input("Type Country => ")
+    result = utils.population_by_country(data, country)
+
+    if len(result) > 0:
+      country = result[0]
+      labels, values = utils.get_population(country)
+      charts.generate_bar_chart(labels, values)
+
 
 if __name__ == '__main__':
     run()
